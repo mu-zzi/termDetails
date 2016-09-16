@@ -1,0 +1,214 @@
+/*
+*   style
+*/
+@import url(http://fonts.googleapis.com/css?family=Raleway:200,400,700,800);
+@font-face {
+    font-weight: normal;
+    font-style: normal;
+    font-family: 'codropsicons';
+    src:url('../fonts/codropsicons/codropsicons.eot');
+    src:url('../fonts/codropsicons/codropsicons.eot?#iefix') format('embedded-opentype'),
+    url('../fonts/codropsicons/codropsicons.woff') format('woff'),
+    url('../fonts/codropsicons/codropsicons.ttf') format('truetype'),
+    url('../fonts/codropsicons/codropsicons.svg#codropsicons') format('svg');
+}
+
+*, *:after, *:before { -webkit-box-sizing: border-box; box-sizing: border-box; }
+.clearfix:before, .clearfix:after { content: ''; display: table; }
+.clearfix:after { clear: both; }
+
+body {
+    background: #f9faff;
+    font-weight: 400;
+    font-size: 1.5em;
+    font-family: 'Raleway', Arial, sans-serif;
+}
+
+a {
+    color: #1f77b4;
+    text-decoration: none;
+    outline: none;
+}
+
+a:hover, a:focus {
+    color: #c94e50;
+    outline: none;
+}
+
+section {
+    padding: 1em;
+    text-align: center;
+}
+
+
+/*
+*   tabbed view
+*/
+
+/*body {*/
+    /*font-size: 80%;*/
+    /*font-family: 'Lucida Grande', Verdana, Arial, Sans-Serif, serif;*/
+/*}*/
+
+ul#tabs {
+    list-style-type: none;
+    margin: 30px 0 0 0;
+    padding: 0 0 0.3em 0;
+}
+ul#tabs li {
+    display: inline;
+}
+ul#tabs li a {
+    color: #42454a;
+    background-color: #dedbde;
+    border: 1px solid #c9c3ba;
+    border-bottom-style: none;
+    padding: 0.3em;
+    text-decoration-line: none;
+}
+ul#tabs li a:hover {
+    background-color: #f1f0ee;
+}
+ul#tabs li a.selected {
+    color: #000;
+    background-color: #f1f0ee;
+    font-weight: bold;
+    padding: 0.7em 0.3em 0.38em 0.3em;
+}
+div.tabContent {
+    border: 1px solid #c9c3ba;
+    /*padding: 0.5em;*/
+    background-color: #f1f0ee;
+}
+div.tabContent.hide {
+    display: none;
+}
+
+/*
+*   network view
+*/
+path.link {
+    fill: none;
+    stroke: #999;
+    stroke-width: 1.5px;
+}
+
+circle {
+    fill: #ccc;
+    stroke: #444;
+    stroke-width: 1.5px;
+}
+
+text {
+    fill: #000;
+    font-size: 15px;
+    font-family: sans-serif;
+    pointer-events: none;
+}
+
+div.tooltip {
+    position: absolute;
+    text-align: center;
+    padding: 2px;
+    font-size: 12px;
+    font-family: sans-serif;
+    background: lightgrey;
+    border: 0;
+    pointer-events: none;
+}
+
+
+
+/*
+*   term details
+*/
+.termLabel{
+    font-size: 50px;
+    color: #000000;
+}
+
+.sourceTerminology{
+    font-size: 14px;
+    color: #e78f08;
+}
+
+.horizontalLine{
+    color: #008800;
+}
+
+.synonyms{
+    font-size: 30px;
+}
+
+.termDetails{
+    font-size: 20px;
+    color: #880000;
+}
+
+.initiallyHidden{ /* do not rename! */
+    display: none;
+}
+
+.showInline{
+    display: inline;
+}
+
+.pointer{
+    cursor: pointer;
+}
+
+.showInline:hover {
+    opacity: 0.6;
+    cursor: hand;
+}
+
+.parentListElement{
+    text-decoration: underline;
+    font-weight: bold;
+    text-decoration: underline dotted; !important; /* unsupported by chrome */
+    -webkit-text-decoration-style: dotted;
+}
+
+.childListElement {
+    text-indent: 10px;
+}
+
+.termDetailWrapper{
+    padding-bottom: 20px;
+}
+
+/*
+*   tree view
+*/
+.node rect {
+    cursor: pointer;
+    fill: #fff;
+    /*fill-opacity: .5;*/
+    stroke: #000;
+    stroke-width: 1.5px;
+}
+
+.node text {
+    font: 10px sans-serif;
+    pointer-events: none;
+}
+
+
+/*
+* relations
+*/
+
+.subClassOf {
+    stroke: #c81919;
+    color: #c81919;
+}
+
+.partOf {
+    stroke: #c86419;
+    color: #c86419;
+}
+
+.has_a {
+    stroke: #c8af32;
+    color: #c8af32;
+}

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Terminology Server - Term details</title>
+
+    <script src="js/termDetails.js"></script>
+    <script src="http://d3js.org/d3.v4.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="fonts/font-awesome-4.2.0/css/font-awesome.min.css"/>
+
+    <link rel="stylesheet" href="css/codrops/menu.css"/>
+    <link rel="stylesheet" href="css/termDetails.css"/>
+</head>
+
+<body>
+
+<header>
+    <div style="width: 100%; overflow: hidden" id="header">
+        <p>
+            <span id="termLabel"></span>
+            <span id="sourceTerminology"></span>
+        </p>
+        <p>
+            <span><a href="" id="termUri" class="pointer"></a></span>
+            <span><img src="files/followLink.png" width="12px" id="btnTermUri" class="initiallyHidden pointer"></span>
+        </p>
+    </div>
+</header>
+
+
+<div style="width: 100%; overflow: auto">
+    <div style="float:left; width: 49%">
+
+
+        <div style="float:left; width: 95%" id="leftScreen">
+
+        <span id="horizontalLine" class="horizontalLine">
+            <hr>
+        </span>
+
+            <span id="description"></span>
+            <span id="synonyms"></span>
+            <span id="commonNames"></span>
+            <span id="termDetails"></span>
+
+            <p>
+            <div id="toggleDetails" class="initiallyHidden pointer" value="show">
+                <span><img src="files/arrow_right.png" width="16px" id="toggleDetailsArrow"/></span>
+                <span>Further Term Details</span>
+            </div>
+            <div id="detailsToggleArea" class="initiallyHidden">
+                <ul id="furtherTermDetails" style="list-style-type: none;"></ul>
+            </div>
+            </p>
+
+            <p>
+            <div id="toggleRelations" class="initiallyHidden pointer">
+                <span><img src="files/arrow_down.png" width="16px" id="toggleRelationsArrow"/></span>
+                <span>Term Relations</span>
+            </div>
+            <div id="relationsToggleArea">
+                <ul id="termRelations" style="list-style-type: none;"></ul>
+            </div>
+            </p>
+        </div>
+    </div>
+
+
+    <div style="float:left; width: 50%;" id="rightScreen">
+
+        <ul id="tabs">
+            <li><a href="#treeViewTab">Tree View</a></li>
+            <li><a href="#networkViewTab">Network View</a></li>
+        </ul>
+
+        <div class="tabContent" id="treeViewTab">
+            <div id="treeView">
+            </div>
+        </div>
+
+        <div class="tabContent" id="networkViewTab">
+
+            <div class="container">
+
+                <!-- MENU -->
+                <div class="menu-wrap">
+
+                    <nav class="menu">
+                        <div class="relation-list">
+                            <fieldset id="relation-list-field">
+                            </fieldset>
+                        </div>
+                    </nav>
+                </div>
+
+                <!-- MENU BUTTON -->
+                <button class="menu-button" id="open-button"><i class="fa fa-fw fa-cog"></i><span>Open Menu</span>
+                </button>
+
+                <!-- CONTENT -->
+                <div class="content-wrap">
+                    <div class="content">
+
+                        <div id="networkView">
+                            <!-- test -->
+                            <span id="isOntology" style="font-size: 8px; color: #777"></span>
+                        </div>
+
+                    </div>
+                </div><!-- /content-wrap -->
+            </div><!-- /container -->
+        </div>
+    </div>
+</div>
+<div style="clear:both"></div>
+
+
+<script>
+    $(document).ready(function () {
+        start(); //call 'start(terminology, uri);' possible
+    });
+
+</script>
+<script src="js/codrops/main.js"></script>
+<script src="js/codrops/classie.js"></script>
+</body>
+</html>
