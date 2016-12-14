@@ -1,7 +1,6 @@
-/*
-*   style
-*/
-@import url(http://fonts.googleapis.com/css?family=Raleway:200,400,700,800);
+/*@import url(http://fonts.googleapis.com/css?family=Raleway:200,400,700,800);*/
+@import url(https://fonts.googleapis.com/css?family=Roboto:200,400,700,800);
+
 @font-face {
     font-weight: normal;
     font-style: normal;
@@ -21,11 +20,12 @@ body {
     background: #f9faff;
     font-weight: 400;
     font-size: 1.5em;
-    font-family: 'Raleway', Arial, sans-serif;
+    font-family: 'Roboto', Arial, sans-serif;
+    color: #00131a;
 }
 
 a {
-    color: #1f77b4;
+    color: #b7cee2;
     text-decoration: none;
     outline: none;
 }
@@ -129,7 +129,9 @@ div.tooltip {
 
 .sourceTerminology{
     font-size: 14px;
-    color: #e78f08;
+    color: #e94d18;
+    vertical-align: sub;
+    padding-left: 5px;
 }
 
 .horizontalLine{
@@ -157,13 +159,13 @@ div.tooltip {
     cursor: pointer;
 }
 
-.showInline:hover {
-    opacity: 0.6;
-    cursor: hand;
-}
+/*.showInline:hover {*/
+    /*opacity: 0.6;*/
+    /*cursor: hand;*/
+/*}*/
 
 .parentListElement{
-    text-decoration: underline;
+    /*text-decoration: underline;*/
     font-weight: bold;
     text-decoration: underline dotted; !important; /* unsupported by chrome */
     -webkit-text-decoration-style: dotted;

@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="css/termDetails.css"/>
 </head>
 
-<body>
+<body style="padding: 20px">
 
 <header>
     <div style="width: 100%; overflow: hidden" id="header">
@@ -26,17 +26,14 @@
         </p>
         <p>
             <span><a href="" id="termUri" class="pointer"></a></span>
-            <span><img src="files/followLink.png" width="12px" id="btnTermUri" class="initiallyHidden pointer"></span>
         </p>
     </div>
 </header>
 
 
-<div style="width: 100%; overflow: auto">
-    <div style="float:left; width: 49%">
-
-
-        <div style="float:left; width: 95%" id="leftScreen">
+<div style="width: 100%; overflow: auto;">
+    <div style="float:left; width: 50%; padding-right: 50px;">
+        <div style="width: 100%" id="leftScreen">
 
         <span id="horizontalLine" class="horizontalLine">
             <hr>
@@ -45,6 +42,7 @@
             <span id="description"></span>
             <span id="synonyms"></span>
             <span id="commonNames"></span>
+            <span id="translations"></span>
             <span id="termDetails"></span>
 
             <p>
@@ -70,7 +68,7 @@
     </div>
 
 
-    <div style="float:left; width: 50%;" id="rightScreen">
+    <div style="float:left; width: 50%;" id="rightScreen" class="initiallyHidden">
 
         <ul id="tabs">
             <li><a href="#treeViewTab">Tree View</a></li>
@@ -121,8 +119,26 @@
 
 <script>
     $(document).ready(function () {
-        start(); //call 'start(terminology, uri);' possible
+
+        var uri = getParameterByName('uri', window.location.href);
+        var terminology = getParameterByName('terminology', window.location.href);
+
+        start(terminology, uri); //call 'start(terminology, uri);' possible
     });
+
+
+    function getParameterByName(name, url) {
+        if (!url) {
+            url = window.location.href;
+        }
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+    }
+
 
 </script>
 <script src="js/codrops/main.js"></script>

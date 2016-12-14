@@ -2,20 +2,27 @@ const dev = false;
 const importantRelations = ['subClassOf', 'partOf']; //important (normalized) names of term-relations to be styled in css
 const baseUrl = dev ? 'http://dev-gfbio.bgbm.org/api/terminologies/' : 'http://terminologies.gfbio.org/api/terminologies/';
 
-const hierarchyService = 'hierarchy/';
-const termService = 'term/';
+const hierarchyService = 'hierarchy';
+const termService = 'term';
 
 var terminology =
 // 'NCBITAXON';
 // 'PESI';
 'CHEBI';
+// 'KINGDOM';
 
 var termuri =
-// 'http://purl.bioontology.org/ontology/NCBITAXON/45372';
-// 'http://www.eu-nomen.eu/portal/taxon.php?GUID=6A8E85BD-5E52-4AE2-9444-99128C87A672';
-// 'http://purl.obolibrary.org/obo/CHEBI_33672';
-// 'http://purl.obolibrary.org/obo/CHEBI_16526';
-'http://purl.obolibrary.org/obo/CHEBI_27841'
+    // dev ? 'http://purl.bioontology.org/ontology/NCBITAXON/45372' : 'http://purl.obolibrary.org/obo/NCBITaxon_2'
+    // dev ? 'http://purl.bioontology.org/ontology/NCBITAXON/78263' : 'http://purl.obolibrary.org/obo/NCBITaxon_78263'
+
+// 'http://www.eu-nomen.eu/portal/taxon.php?GUID=6A8E85BD-5E52-4AE2-9444-99128C87A672'
+//     'http://www.eu-nomen.eu/portal/taxon.php?GUID=AC47AA36-4552-45F7-8A0C-F007BE99F9A0'
+// 'http://purl.obolibrary.org/obo/CHEBI_33672'
+'http://purl.obolibrary.org/obo/CHEBI_16526'
+// 'http://purl.obolibrary.org/obo/CHEBI_27841'
+//     'http://purl.obolibrary.org/obo/CHEBI_27594'
+//     'http://terminologies.gfbio.org/terms/KINGDOM/Bacteria'
+;
 
 var termLabel = '';
 
@@ -35,11 +42,23 @@ function start(sourceTerminology, uri) {
     main();
 }
 
-var tsSchemaMap = {}; //important (ts) term properties
-var externalMap = {}; //further (external) term properties
-var relationsMap = {}; //term relations
-var normalizedNameMap = {}; //normalized term property names
-var relationColorsMap = {}; //term relations colors
+//important (ts) term properties
+var tsSchemaMap = {};
+
+//further (external) term properties
+var externalMap = {};
+
+//term relations
+var relationsMap = {};
+
+//term relation labels
+var relationsLabelMap = {};
+
+//normalized term property names
+var normalizedNameMap = {};
+
+//term relations colors
+var relationColorsMap = {};
 
 var VIS = {
     nodes: [],
@@ -51,24 +70,31 @@ var VIS = {
     start: function () {
 
         //get the term data details incl. context from json-ld file
-        $.get(baseUrl + terminology + '/' + termService, {uri: termuri, format: 'jsonld'}, function (data) {
+        $.get(baseUrl + terminology + '/' + termService, {uri: termuri, format: 'jsonld'}, function (data, status, xhr) {
+            if(status != 'success'){
+                alert(status + ' - error retrieving term details. terminology=' + terminology + " and uri=" + termuri);
+                return;
+            }
+
             var result = data.results[0];
             var context = result["@context"];
             var graph = result["@graph"][0];
 
             //TEST
             if(dev){
-                context['partOf'] = 'http://my.property/partOf';
-                graph['partOf'] = ['http://my.ontology/partOfParent1', 'http://my.ontology/partOfParent2', 'http://my.ontology/partOfParent3'];
+                if(context && graph){
+                    context['partOf'] = 'http://my.property/partOf';
+                    graph['partOf'] = ['http://my.ontology/partOfParent1', 'http://my.ontology/partOfParent2', 'http://my.ontology/partOfParent3'];
 
-                context['has_a'] = 'http://my.property/has_a';
-                graph['has_a'] = ['http://my.ontology/hasClass1', 'http://my.ontology/hasClass2', 'http://my.ontology/hasClass3'];
+                    context['has_a'] = 'http://my.property/has_a';
+                    graph['has_a'] = ['http://my.ontology/hasClass1', 'http://my.ontology/hasClass2', 'http://my.ontology/hasClass3'];
 
-                context['myProp1'] = 'http://my.property/my_property1';
-                graph['myProp1'] = 'my property val 1';
+                    context['myProp1'] = 'http://my.property/my_property1';
+                    graph['myProp1'] = 'my property val 1';
 
-                context['my_prop2'] = 'http://my.property/my_property2';
-                graph['my_prop2'] = ['my property val 2.1', 'my property val 2.2'];
+                    context['my_prop2'] = 'http://my.property/my_property2';
+                    graph['my_prop2'] = ['my property val 2.1', 'my property val 2.2'];
+                }
             }
 
             Object.getOwnPropertyNames(context).forEach(function (value, idx, array) {
@@ -80,27 +106,85 @@ var VIS = {
                     str = graph[value][0];
                 }
 
-                if (value.startsWith('uri')) {
+                if (value.startsWith('uri') || value.startsWith('preferred label')) {
                     tsSchemaMap[normalizedVal] = graph[value];
-
-                    var button = document.getElementById('btnTermUri');
-                    button.classList.remove('initiallyHidden');
-                    button.setAttribute("onclick", 'window.open("' + tsSchemaMap[value] + '")');
-
+                } else if(context[value].includes('ts-schema')){
+                    tsSchemaMap[normalizedVal] = graph[value];
+                }else if(dev && (value.startsWith('label') || value.startsWith('definition') || value.startsWith('synonym'))){ //dev!
+                    tsSchemaMap[normalizedVal] = graph[value];
                 } else if (value.startsWith('type')){ //skip this term detail
                 } else if (str.startsWith('http:')) {
+
+                    /**
+                     * rename relation uris with relation labels
+                     *
+                     */
+
+                    var ar = [];
+                    // if(graph[value] && Array.isArray(graph[value])){
+                        for(var i in graph[value]){
+                            $.get(baseUrl + terminology + '/' + termService, {uri: graph[value][i]}, function (data, status, xhr) {
+                                if(status != 'success'){
+                                    alert(status + ' - error retrieving labels.');
+                                    return;
+                                }
+
+                                var results = data.results;
+                                for(var j in results){
+                                    relationsLabelMap[results[j].uri] = results[j].label;
+                                }
+                            });
+
+                            if(i == graph[value].length -1){
+
+                                // console.log(relationsLabelMap);
+
+                                Object.getOwnPropertyNames(relationsLabelMap).forEach(function (val, idx, array) {
+                                   console.log(val);
+
+                                    for(var a in val){
+                                       console.log(a);
+                                   }
+
+                                });
+
+                                // var li = document.getElementById(graph[value][i]);
+                                // li.textContent = results[j].label;
+                            }
+                        }
+                    // }
+
+                    /**
+                     *
+                     *
+                     */
+
                     relationsMap[normalizedVal] = graph[value];
-                } else if (context[value].includes('ts-schema')) {
-                    tsSchemaMap[normalizedVal] = graph[value];
                 } else {
                     externalMap[normalizedVal] = graph[value];
                 }
             });
 
+
+            //special case, for labels including an array of translations in the format "[translation]@[language]"
+            var labelTranslations = [];
+            if(tsSchemaMap['label'] && Array.isArray(tsSchemaMap['label'])){
+                Object.getOwnPropertyNames(tsSchemaMap['label']).forEach(function (trans, idx, array) {
+                    var x = tsSchemaMap['label'][idx];
+                    if(idx > 0 && !isUndefined(x)){
+                        var translation = x.split('@');
+                        labelTranslations.push(translation[0] + " (" + translation[1] + ")");
+                    }
+                });
+
+                tsSchemaMap['translations'] = labelTranslations;
+                tsSchemaMap['label'] = tsSchemaMap['label'][0];
+            }
+
             for (var termDetail in tsSchemaMap) {
                 switch (termDetail) {
+                    case 'preferredlabel': //dev
                     case 'label':
-                        termLabel = tsSchemaMap[termDetail];
                         appendElement('termLabel', 'SPAN', tsSchemaMap[termDetail], 'termLabel');
                         break;
                     case 'uri':
@@ -111,14 +195,19 @@ var VIS = {
                     case 'sourceTerminology':
                         appendElement('sourceTerminology', 'SPAN', tsSchemaMap[termDetail], 'sourceTerminology');
                         break;
+                    case 'definition': //dev
                     case 'description':
                         appendTermDetail('description', termDetail, tsSchemaMap[termDetail]);
                         break;
+                    case 'synonym': //dev
                     case 'synonyms':
                         appendTermDetail('synonyms', termDetail, tsSchemaMap[termDetail]);
                         break;
                     case 'commonNames':
                         appendTermDetail('commonNames', termDetail, tsSchemaMap[termDetail]);
+                        break;
+                    case 'Translation':
+                        appendTermDetail('translations', termDetail, tsSchemaMap[termDetail]);
                         break;
                     default:
                         appendTermDetail('termDetails', termDetail, tsSchemaMap[termDetail]);
@@ -143,7 +232,9 @@ var VIS = {
                 var input = document.createElement('INPUT');
                 var span = document.createElement('SPAN');
 
-                span.innerHTML = splitAndCapitalize(normalizedNameMap[termRelation]);
+
+                // span.innerHTML = splitAndCapitalize(normalizedNameMap[termRelation]);
+                span.innerHTML = normalizedNameMap[termRelation];
                 input.type = 'checkbox';
                 input.name = 'relation';
                 input.checked = 'true';
@@ -192,8 +283,6 @@ var VIS = {
                     };
                     VIS.tempnodes.push(node);
 
-                    // console.log(this.hierarchy);
-
                     if(this.hierarchy.length > 1){
                         isOntology = isOntology || true;
                     }else{
@@ -209,8 +298,14 @@ var VIS = {
                     });
                 });
 
-                // VIS.createTreeView(data);
-                VIS.createNetworkView(data);
+                if(VIS.links.length > 0){
+                    var viz = document.getElementById('rightScreen');
+                    viz.classList.remove('initiallyHidden');
+                    viz.classList.add('showInline');
+
+                    // VIS.createTreeView(data);
+                    VIS.createNetworkView(data);
+                }
 
                 if(dev){
                     document.getElementById('isOntology').innerHTML = 'isOntology=' + isOntology;
@@ -369,8 +464,10 @@ var VIS = {
 
 //		VIS.nodes.forEach(function(node) {
         VIS.tempnodes.forEach(function (tempnode) {
-            if (VIS.nodes[tempnode.uri].name == tempnode.uri) {
-                VIS.nodes[tempnode.uri].label = tempnode.label;
+            if(!isUndefined(VIS.nodes[tempnode.uri])){ //TODO: why is uri undefined?
+                if (VIS.nodes[tempnode.uri].name == tempnode.uri) {
+                    VIS.nodes[tempnode.uri].label = tempnode.label;
+                }
             }
         });
 //		});
@@ -669,7 +766,7 @@ function appendListElement(id, parent, children, color) {
     if (importantRelations.indexOf(parent) != -1) {
         childStyle += " " + parent;
     }
-
+    // appendElement(id, 'LI', parent, 'parentListElement');
     appendElement(id, 'LI', splitAndCapitalize(parent), 'parentListElement');
     appendElement(id, 'LI', children, childStyle, color);
 }
@@ -696,6 +793,9 @@ function appendElement(id, elemType, content, styleClass, color) {
         var textNode = document.createTextNode(text);
         node.appendChild(textNode);
         node.className = styleClass;
+        if(text.startsWith('http')){
+            node.id = text;
+        }
 
         if(color != null){
             node.style = 'stroke: ' + color + '; color: ' + color + ';';
@@ -716,23 +816,27 @@ function splitAndCapitalize(word) {
     }
 
     var result = '';
-
     for (var j = 0; j < wordArr.length; j++) {
-        result += wordArr[j].capitalizeFirstLetter();
+        result += capitalizeFirstLetter(wordArr[j]);
 
         if (j < wordArr.length - 1) {
             result += " ";
         }
     }
 
+    if(isUndefined(result)){
+        return word;
+    }
+
     return result;
 }
 
-String.prototype.capitalizeFirstLetter = function () {
-    return this.charAt(0).toUpperCase() + this.slice(1);
-};
-
-
+function capitalizeFirstLetter(string){
+    if(typeof string == 'string'){
+        return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+    return string;
+}
 
 
 
