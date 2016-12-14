@@ -6,10 +6,11 @@ const hierarchyService = 'hierarchy';
 const termService = 'term';
 
 var terminology =
-// 'NCBITAXON';
-// 'PESI';
-'CHEBI';
-// 'KINGDOM';
+// 'NCBITAXON'
+// 'PESI'
+// 'CHEBI'
+'KINGDOM'
+;
 
 var termuri =
     // dev ? 'http://purl.bioontology.org/ontology/NCBITAXON/45372' : 'http://purl.obolibrary.org/obo/NCBITaxon_2'
@@ -18,10 +19,10 @@ var termuri =
 // 'http://www.eu-nomen.eu/portal/taxon.php?GUID=6A8E85BD-5E52-4AE2-9444-99128C87A672'
 //     'http://www.eu-nomen.eu/portal/taxon.php?GUID=AC47AA36-4552-45F7-8A0C-F007BE99F9A0'
 // 'http://purl.obolibrary.org/obo/CHEBI_33672'
-'http://purl.obolibrary.org/obo/CHEBI_16526'
+// 'http://purl.obolibrary.org/obo/CHEBI_16526'
 // 'http://purl.obolibrary.org/obo/CHEBI_27841'
 //     'http://purl.obolibrary.org/obo/CHEBI_27594'
-//     'http://terminologies.gfbio.org/terms/KINGDOM/Bacteria'
+    'http://terminologies.gfbio.org/terms/KINGDOM/Bacteria'
 ;
 
 var termLabel = '';
@@ -83,11 +84,13 @@ var VIS = {
             //TEST
             if(dev){
                 if(context && graph){
-                    context['partOf'] = 'http://my.property/partOf';
-                    graph['partOf'] = ['http://my.ontology/partOfParent1', 'http://my.ontology/partOfParent2', 'http://my.ontology/partOfParent3'];
+                    if(terminology!='CHEBI'){
+                        context['partOf'] = 'http://my.property/partOf';
+                        graph['partOf'] = ['http://my.ontology/partOfParent1', 'http://my.ontology/partOfParent2', 'http://my.ontology/partOfParent3'];
+                    }
 
                     context['has_a'] = 'http://my.property/has_a';
-                    graph['has_a'] = ['http://my.ontology/hasClass1', 'http://my.ontology/hasClass2', 'http://my.ontology/hasClass3'];
+                    graph['has_a'] = terminology == 'CHEBI' ? ['http://purl.obolibrary.org/obo/CHEBI_27841', 'http://purl.obolibrary.org/obo/CHEBI_27594'] : ['http://my.ontology/hasClass1', 'http://my.ontology/hasClass2', 'http://my.ontology/hasClass3'];
 
                     context['myProp1'] = 'http://my.property/my_property1';
                     graph['myProp1'] = 'my property val 1';
@@ -101,70 +104,50 @@ var VIS = {
                 var normalizedVal = value.replace(/\s+/g, '');
                 normalizedNameMap[normalizedVal] = value;
 
-                var str = graph[value];
+                var first = graph[value];
                 if (Array.isArray(graph[value])) {
-                    str = graph[value][0];
+                    first = graph[value][0];
                 }
 
-                if (value.startsWith('uri') || value.startsWith('preferred label')) {
-                    tsSchemaMap[normalizedVal] = graph[value];
-                } else if(context[value].includes('ts-schema')){
+                if (value.startsWith('uri') || value.startsWith('preferred label') || context[value].includes('ts-schema')) {
                     tsSchemaMap[normalizedVal] = graph[value];
                 }else if(dev && (value.startsWith('label') || value.startsWith('definition') || value.startsWith('synonym'))){ //dev!
                     tsSchemaMap[normalizedVal] = graph[value];
                 } else if (value.startsWith('type')){ //skip this term detail
-                } else if (str.startsWith('http:')) {
+                } else if (first.startsWith('http:')) {
+                    relationsMap[normalizedVal] = graph[value];
 
-                    /**
-                     * rename relation uris with relation labels
-                     *
-                     */
+                    // replace relation uris with relation labels
+                    if (graph[value]) {
+                        var uris = [];
 
-                    var ar = [];
-                    // if(graph[value] && Array.isArray(graph[value])){
-                        for(var i in graph[value]){
-                            $.get(baseUrl + terminology + '/' + termService, {uri: graph[value][i]}, function (data, status, xhr) {
-                                if(status != 'success'){
-                                    alert(status + ' - error retrieving labels.');
+                        if (Array.isArray(graph[value])) {
+                            uris = graph[value];
+                        } else {
+                            uris.push(graph[value]);
+                        }
+
+                        for (var i in uris) {
+                            $.get(baseUrl + terminology + '/' + termService, {uri: uris[i]}, function (data, status, xhr) {
+                                if (status != 'success' || data.results.length == 0) {
+                                    console.log('server response: ' + status + '\nerror retrieving labels for ' + graph[value][i]);
                                     return;
                                 }
 
                                 var results = data.results;
-                                for(var j in results){
-                                    relationsLabelMap[results[j].uri] = results[j].label;
+                                for (var j in results) {
+                                    var relation = document.getElementById(results[j].uri);
+                                    if (relation) {
+                                        relation.innerHTML = results[j].label;
+                                    }
                                 }
                             });
-
-                            if(i == graph[value].length -1){
-
-                                // console.log(relationsLabelMap);
-
-                                Object.getOwnPropertyNames(relationsLabelMap).forEach(function (val, idx, array) {
-                                   console.log(val);
-
-                                    for(var a in val){
-                                       console.log(a);
-                                   }
-
-                                });
-
-                                // var li = document.getElementById(graph[value][i]);
-                                // li.textContent = results[j].label;
-                            }
                         }
-                    // }
-
-                    /**
-                     *
-                     *
-                     */
-
-                    relationsMap[normalizedVal] = graph[value];
+                    }
                 } else {
                     externalMap[normalizedVal] = graph[value];
                 }
             });
-
 
             //special case, for labels including an array of translations in the format "[translation]@[language]"
             var labelTranslations = [];
@@ -766,7 +749,7 @@ function appendListElement(id, parent, children, color) {
     if (importantRelations.indexOf(parent) != -1) {
         childStyle += " " + parent;
     }
-    // appendElement(id, 'LI', parent, 'parentListElement');
+
     appendElement(id, 'LI', splitAndCapitalize(parent), 'parentListElement');
     appendElement(id, 'LI', children, childStyle, color);
 }
@@ -790,12 +773,18 @@ function appendElement(id, elemType, content, styleClass, color) {
         }
 
         var node = document.createElement(elemType);
-        var textNode = document.createTextNode(text);
-        node.appendChild(textNode);
-        node.className = styleClass;
+
         if(text.startsWith('http')){
-            node.id = text;
+            var linkNode = document.createElement('A');
+            linkNode.href = text;
+            linkNode.id = text;
+            linkNode.innerHTML = text;
+            node.appendChild(linkNode);
+        }else{
+            node.innerHTML = text;
         }
+
+        node.className = styleClass;
 
         if(color != null){
             node.style = 'stroke: ' + color + '; color: ' + color + ';';
