@@ -4,8 +4,8 @@
     <title>Terminology Server - Term details</title>
 
     <script src="js/termDetails.js"></script>
-    <script src="http://d3js.org/d3.v4.min.js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
@@ -51,7 +51,7 @@
                 <span>Further Term Details</span>
             </div>
             <div id="detailsToggleArea" class="initiallyHidden">
-                <ul id="furtherTermDetails" style="list-style-type: none;"></ul>
+                <ul id="furtherTermDetails" class="termDetailList"></ul>
             </div>
             </p>
 
@@ -60,8 +60,8 @@
                 <span><img src="files/arrow_down.png" width="16px" id="toggleRelationsArrow"/></span>
                 <span>Term Relations</span>
             </div>
-            <div id="relationsToggleArea">
-                <ul id="termRelations" style="list-style-type: none;"></ul>
+            <div id="relationsToggleArea" class="showInline">
+                <ul id="termRelations" class="termDetailList"></ul>
             </div>
             </p>
         </div>
@@ -71,8 +71,8 @@
     <div style="float:left; width: 50%;" id="rightScreen" class="initiallyHidden">
 
         <ul id="tabs">
-            <li><a href="#treeViewTab">Tree View</a></li>
             <li><a href="#networkViewTab">Network View</a></li>
+            <li><a href="#treeViewTab" style="display: none;">Tree View</a></li>
         </ul>
 
         <div class="tabContent" id="treeViewTab">

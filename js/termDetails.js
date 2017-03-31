@@ -1,6 +1,6 @@
 const dev = false;
-const importantRelations = ['subClassOf', 'partOf']; //important (normalized) names of term-relations to be styled in css
-const baseUrl = dev ? 'http://dev-gfbio.bgbm.org/api/terminologies/' : 'http://terminologies.gfbio.org/api/terminologies/';
+const importantRelations = ['subClassOf', 'partOf', 'has_a']; //important (normalized) names of term-relations to be styled in css
+const baseUrl = dev ? 'http://dev-gfbio.bgbm.org/api/terminologies/' : 'https://terminologies.gfbio.org/api/terminologies/';
 
 const hierarchyService = 'hierarchy';
 const termService = 'term';
@@ -8,8 +8,8 @@ const termService = 'term';
 var terminology =
 // 'NCBITAXON'
 // 'PESI'
-// 'CHEBI'
-'KINGDOM'
+'CHEBI'
+// 'KINGDOM'
 ;
 
 var termuri =
@@ -21,8 +21,8 @@ var termuri =
 // 'http://purl.obolibrary.org/obo/CHEBI_33672'
 // 'http://purl.obolibrary.org/obo/CHEBI_16526'
 // 'http://purl.obolibrary.org/obo/CHEBI_27841'
-//     'http://purl.obolibrary.org/obo/CHEBI_27594'
-    'http://terminologies.gfbio.org/terms/KINGDOM/Bacteria'
+    'http://purl.obolibrary.org/obo/CHEBI_27594'
+    // 'http://terminologies.gfbio.org/terms/KINGDOM/Bacteria'
 ;
 
 var termLabel = '';
@@ -138,7 +138,7 @@ var VIS = {
                                 for (var j in results) {
                                     var relation = document.getElementById(results[j].uri);
                                     if (relation) {
-                                        relation.innerHTML = results[j].label;
+                                        relation.innerText = results[j].label;
                                     }
                                 }
                             });
@@ -208,6 +208,7 @@ var VIS = {
             }
 
             for (var termRelation in relationsMap) {
+                //network view menu
                 var color = null;
 
                 var div = document.createElement('DIV');
@@ -215,9 +216,8 @@ var VIS = {
                 var input = document.createElement('INPUT');
                 var span = document.createElement('SPAN');
 
-
-                // span.innerHTML = splitAndCapitalize(normalizedNameMap[termRelation]);
-                span.innerHTML = normalizedNameMap[termRelation];
+                span.innerHTML = splitAndCapitalize(normalizedNameMap[termRelation]);
+                // span.innerHTML = normalizedNameMap[termRelation];
                 input.type = 'checkbox';
                 input.name = 'relation';
                 input.checked = 'true';
@@ -750,8 +750,52 @@ function appendListElement(id, parent, children, color) {
         childStyle += " " + parent;
     }
 
-    appendElement(id, 'LI', splitAndCapitalize(parent), 'parentListElement');
-    appendElement(id, 'LI', children, childStyle, color);
+    // appendElement(id, 'UL', splitAndCapitalize(parent), 'parentListElement');
+    // appendElement(id, 'LI', children, childStyle, color);
+
+    var par = document.createElement('UL');
+    par.innerText = splitAndCapitalize(parent);
+    par.id = parent;
+    par.className = 'parentListElement';
+
+
+    if(parent.startsWith('sub')){
+        par.className += ' subClassOf';
+    }else if(parent.startsWith('part')){
+        par.className += ' partOf';
+    }else if(parent.startsWith('has_A')){
+        par.className += ' has_A';
+    }else
+
+        if(color != null){
+        par.style = 'stroke: ' + color + '; color: ' + color + ';';
+    }
+
+
+
+
+    if (!Array.isArray(children)) {
+        var cAr = [];
+        cAr.push(children);
+        children = cAr;
+    }
+
+    for (var i = 0; i < children.length; i++) {
+        var chi = document.createElement('LI');
+        chi.className = childStyle;
+        if(children[i].startsWith('http')){
+            var linkNode = document.createElement('A');
+            linkNode.href = children[i];
+            linkNode.id = children[i];
+            linkNode.innerHTML = children[i];
+            chi.appendChild(linkNode);
+        }else{
+            chi.innerText = children[i];
+        }
+        par.appendChild(chi);
+    }
+
+    document.getElementById(id).appendChild(par);
 }
 
 function appendElement(id, elemType, content, styleClass) {
@@ -774,15 +818,15 @@ function appendElement(id, elemType, content, styleClass, color) {
 
         var node = document.createElement(elemType);
 
-        if(text.startsWith('http')){
-            var linkNode = document.createElement('A');
-            linkNode.href = text;
-            linkNode.id = text;
-            linkNode.innerHTML = text;
-            node.appendChild(linkNode);
-        }else{
+        // if(text.startsWith('http')){
+        //     var linkNode = document.createElement('A');
+        //     linkNode.href = text;
+        //     linkNode.id = text;
+        //     linkNode.innerHTML = text;
+        //     node.appendChild(linkNode);
+        // }else{
             node.innerHTML = text;
-        }
+        // }
 
         node.className = styleClass;
 
